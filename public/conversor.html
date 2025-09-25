@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor USD → ARS | Programación IV</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .header h2 {
+            color: #666;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .convert-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .convert-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        /* RESULTADO COMPACTO */
+        .result-compact {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .result-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+        
+        .result-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .result-value {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .final-compact {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        
+        .final-amount {
+            font-size: 16px;
+            font-weight: 600;
+            color: #28a745;
+        }
+        
+        .conversion-arrow {
+            margin: 0 8px;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .profesor {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            font-size: 12px;
+            font-style: italic;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Conversor USD → ARS</h1>
+            <h2>Programación IV</h2>
+        </div>
+        
+        <div class="form-group">
+            <label for="tipo">Tipo de cotización</label>
+            <select id="tipo">
+                <option value="oficial">Oficial</option>
+                <option value="blue">Blue</option>
+                <option value="bolsa">MEP</option>
+                <option value="turista">Turista</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="monto">Monto en USD</label>
+            <input type="number" id="monto" placeholder="Ej: 100" value="100">
+        </div>
+        
+        <button class="convert-btn" onclick="convertir()">
+            Convertir
+        </button>
+        
+        <div class="loading" id="loading">
+            Calculando...
+        </div>
+        
+        <!-- RESULTADO COMPACTO -->
+        <div class="result-compact" id="resultado" style="display: none;">
+            <div class="result-title">Resultado</div>
+            
+            <div class="result-line">
+                <span class="result-label">Tipo:</span>
+                <span class="result-value" id="tipo-cotizacion"></span>
+            </div>
+            
+            <div class="result-line">
+                <span class="result-label">Cotización:</span>
+                <span class="result-value" id="cotizacion"></span>
+            </div>
+            
+            <div class="final-compact">
+                <div class="final-amount" id="resultado-final"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function convertir() {
+            const monto = document.getElementById('monto').value;
+            const tipo = document.getElementById('tipo').value;
+            
+            if (!monto || monto <= 0) {
+                alert('Ingresá un monto válido en USD');
+                return;
+            }
+            
+            // Mostrar loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultado').style.display = 'none';
+            const button = document.querySelector('.convert-btn');
+            button.textContent = 'Calculando...';
+            button.disabled = true;
+            
+            // Consumir la API
+            fetch(`/api/convertir?valor=${monto}&tipo=${tipo}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+                    
+                    // Formatear números
+                    const formatoArgentino = new Intl.NumberFormat('es-AR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    
+                    // Mostrar resultados compactos
+                    document.getElementById('tipo-cotizacion').textContent = data.tipo;
+                    document.getElementById('cotizacion').textContent = 
+                        `$${formatoArgentino.format(data.cotizacion)}`;
+                    
+                    document.getElementById('resultado-final').innerHTML = 
+                        `US$${formatoArgentino.format(data.valor_dolar)} 
+                         <span class="conversion-arrow">→</span> 
+                         $${formatoArgentino.format(data.resultado_en_pesos)}`;
+                    
+                    document.getElementById('resultado').style.display = 'block';
+                })
+                .catch(error => {
+                    alert('Error de conexión');
+                })
+                .finally(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    button.textContent = 'Convertir';
+                    button.disabled = false;
+                });
+        }
+        
+        // Convertir automáticamente al cargar la página
+        window.onload = convertir;
+        
+        // Convertir al cambiar valores
+        document.getElementById('monto').addEventListener('input', convertir);
+        document.getElementById('tipo').addEventListener('change', convertir);
+    </script>
+</body>
+</html>
