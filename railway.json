@@ -1,9 +1,10 @@
 {
+    "$schema": "https://railway.app/railway.schema.json",
     "build": {
-        "builder": "heroku/buildpacks:20"
+        "builder": "HEROKU_BUILDPACK_URL"
     },
     "deploy": {
-        "startCommand": "php artisan serve --host=0.0.0.0 --port=\$PORT",
+        "startCommand": "php artisan serve --host=0.0.0.0 --port=$PORT",
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 10
     }
